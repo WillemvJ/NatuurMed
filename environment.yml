@@ -1,0 +1,8 @@
+name: dopcs
+channels:
+  - defaults
+dependencies:
+  - python=3.12  # or any version you use
+  - pandas
+  - openpyxl
+  - pip
