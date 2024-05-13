@@ -38,6 +38,8 @@ class SimulationStatus:
     def __init__(self, config):
         # Initialize a deque for each product type
         self.open_customer_orders = [deque() for _ in config['product_name']]
+        self.delivered_customer_orders = [deque() for _ in config['product_name']]
+
         # Initialize a deque for each herb type
         self.open_extraction_orders = [deque() for _ in config['herb_available_months']]
         # Initialize herb inventory
@@ -49,7 +51,7 @@ class SimulationStatus:
         self.mix_storage_containers_in_use = 0
         self.day_number = 0
         self.current_product_per_filling_line = config['initial_product_per_filling_line']
-        self.remaining_setup_time_per_filling_line_from_previous_day = [0, 0]
+        self.utilized_time_per_filling_line_from_previous_day = [0, 0]
         # Initialize tank containers based on configuration so if initially we have
         # num_initial_mix_storage_containers = [2,2], then we have 2 containers of 5000 each of CL, and 2 of AD. note
         # that calling add_mix_container updates the lists of mix_storage_container_inventory, as well as the
