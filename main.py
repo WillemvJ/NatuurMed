@@ -1,18 +1,16 @@
-from DataLoader import load_and_process_data
+from dataloader import load_and_process_data
 from settings import config
-from Simulator import Simulator
+from simulator import Simulator
 
 
-file_path = 'natuurmed.xlsx'
-day_data_list = load_and_process_data(file_path)
-#print first 10 days of data
-#for day_data in day_data_list[:10]:
-#    print(day_data)
 
-simulator = Simulator(config)
-
-for day in day_data_list:
-    simulator.process_day(day)
-
-
-print(simulator)
+if __name__ == "__main__":
+    file_path = 'ProductDemand.xlsx'
+    day_data_list = load_and_process_data(file_path)
+    # config defined in settings.py
+    simulator = Simulator(config)
+    # this setup ensures that the simulator processes the demand
+    # one by one, and does not have access to
+    # future demands when processing the current.
+    for day in day_data_list:
+        simulator.simulate_day(day)
