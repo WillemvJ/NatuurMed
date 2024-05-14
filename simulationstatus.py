@@ -14,9 +14,10 @@ class DayData:
 
 
 class CustomerOrder:
-    def __init__(self, quantity, due_date):
+    def __init__(self, quantity, arrival_date, due_date):
         self.quantity = quantity
         self.due_date = due_date
+        self.arrival_date = arrival_date
         self.delivery_date = None
 
 
@@ -38,8 +39,7 @@ class SimulationStatus:
     def __init__(self, config):
         # Initialize a deque for each product type
         self.open_customer_orders = [deque() for _ in config['product_name']]
-        self.delivered_customer_orders = [deque() for _ in config['product_name']]
-
+        self.closed_customer_orders = [deque() for _ in config['product_name']]
         # Initialize a deque for each herb type
         self.open_extraction_orders = [deque() for _ in config['herb_available_months']]
         # Initialize herb inventory
@@ -108,8 +108,8 @@ class SimulationStatus:
         self.remaining_mix_inventory[mix_type] += initial_quantity
         self.mix_storage_containers_in_use += 1
 
-    def add_product_order(self, product_index, quantity, due_date):
-        self.open_customer_orders[product_index].append(CustomerOrder(quantity, due_date))
+    def add_product_order(self, product_index, quantity, arrival_date, due_date):
+        self.open_customer_orders[product_index].append(CustomerOrder(quantity, arrival_date, due_date))
 
     def add_extraction_order(self, herb_id, quantity, completion_date):
         self.open_extraction_orders[herb_id].append(HerbExtractOrder(quantity, completion_date))

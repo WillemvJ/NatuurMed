@@ -16,7 +16,7 @@ configuration = {
     # it is not clear whether these initial amounts are reasonable. Please argue for an appropriate initialization.
     'initial_herb_inventory': [2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000],
     # it is not clear whether these initial amounts are reasonable. Please argue for an appropriate initialization.
-    'num_initial_mix_storage_containers': [2, 2],
+    'num_initial_mix_storage_containers': [10, 2],
     'production_volumes_per_line': [[3000, 3000, 1500], [6000, 5500, 3000]],
     # note that first line cannot produce AD products:
     'capabilities_per_line': [[1, 1, 1, 0, 0, 0], [1, 1, 1, 1, 1, 1]],

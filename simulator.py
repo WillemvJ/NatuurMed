@@ -1,7 +1,7 @@
 from simulationstatus import SimulationStatus, DayData
 from dataloader import load_and_process_data
 from settings import configuration
-
+from plotting_utils import visualize_order_deltas
 
 class Simulator:
     def __init__(self, config):
@@ -34,11 +34,22 @@ class Simulator:
             # unfinished tasks from previous day:
             time_remaining = 8 * 60 - self.status.utilized_time_per_filling_line_from_previous_day[filling_line]
             product_types_produced = 0
+            # we want to consider production for each product in the cycle at most once, hence the second condition
+            # if time is up, we stop early, hence first condition
             while time_remaining > 0 and product_types_produced < len(rotation_for_line):
                 bottle_type = self.config['product_bottle_type'][current_product]
                 production_per_hour = self.config['production_volumes_per_line'][filling_line][bottle_type]
                 open_orders = self.status.open_customer_orders[current_product]
                 while open_orders and time_remaining > 0:
+                    # type 0 - CL or 1 - AD
+                    mix_type = self.config['product_mix_type'][current_product]
+                    # volume per product in ml * order (in thousands)  = amount of mix in kg/l
+                    mix_amount_required_in_liter = self.config['product_volume'][current_product] * open_orders[0].quantity
+                    if mix_amount_required_in_liter > self.status.remaining_mix_inventory[mix_type]:
+                        # we cannot produce this product, because not enough of the right mix is available
+                        # move to next product.
+                        break
+                    self.status.remove_mix(mix_type,mix_amount_required_in_liter)
                     time_remaining -= open_orders[0].quantity * 1000 / production_per_hour
                     completed_order = open_orders.popleft()
                     if time_remaining > 0:
@@ -48,7 +59,7 @@ class Simulator:
                         # day:
                         completed_order.delivery_date = self.status.day_number + 1
                     # so this order is completed (either today or tomorrow), so we append it as delivered:
-                    self.status.delivered_customer_orders[current_product].append(completed_order)
+                    self.status.closed_customer_orders[current_product].append(completed_order)
                 product_types_produced += 1
                 if time_remaining > 0:
                     # so we managed to complete all open orders for this product type, and
@@ -70,13 +81,28 @@ class Simulator:
         # compute leadtime, assuming only working days are included in the data (need to work on this)
         due_date = self.status.day_number + self.config['product_demand_lead-time']
         for index, demand in enumerate(day_demand_data.demands):
-            self.status.add_product_order(index, demand, due_date)
+            if demand > 0:
+                self.status.add_product_order(index, demand, self.status.day_number, due_date)
             # print(demand)
+
+    def close_overdue_orders(self):
+        current_day = self.status.day_number
+        overdue_threshold = 20  # Orders overdue by more than 10 days are removed
+
+        # Iterate over all products in the open customer orders
+        for product_id, order_deque in enumerate(self.status.open_customer_orders):
+            # Check if there are orders and the oldest order is overdue
+            while order_deque and (current_day - order_deque[0].due_date > overdue_threshold):
+                overdue_order = order_deque.popleft()  # Remove the overdue order from the deque
+                overdue_order.delivery_date = None  # Set delivery date to None to indicate cancellation
+                # Append the overdue order to the closed customer orders
+                self.status.closed_customer_orders[product_id].append(overdue_order)
 
     def simulate_day(self, day_demand_data: DayData):
         self.status.day_number = day_demand_data.day_number
         self.add_demand_orders(day_demand_data)
-        if(day_demand_data.is_workday):
+        self.close_overdue_orders()
+        if day_demand_data.is_workday:
             self.produce_at_filling_line()
 
 
@@ -88,5 +114,9 @@ if __name__ == "__main__":
     # this setup ensures that the simulator processes the demand
     # one by one, and does not have access to
     # future demands when processing the current.
-    for day in day_data_list[:100]:
+    for day in day_data_list[:6000]:
         simulator.simulate_day(day)
+    # an example visualization.
+    # NOTE - overdue orders are set at a delta of 100.
+    # NOTE - currently, no mix is being produced, and hence a lot of orders are never delivered
+    visualize_order_deltas(simulator.status.closed_customer_orders, configuration)
