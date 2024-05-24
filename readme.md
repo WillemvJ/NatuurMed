@@ -43,7 +43,8 @@ of the system from day to day.
 ### Important
 The provided simulation code is a starting point. It may need some corrections, and it needs further work. For example, 
 the code only simulates the filling line, and it does not actually consume any mix while filling. Also, the logic 
-pertaining to the numbering of days may be off. 
+pertaining to the numbering of days may be off. No guarantees that this is correct: If you decide to use without understanding
+you do so at your own peril. 
 
 ### Notes
 The simulation does not use a future event set (FES), nor does it use SimPy. For the present system, both are not really needed and might be overkill, plus they 
