@@ -44,3 +44,11 @@ of the system from day to day.
 The provided simulation code is a starting point. It may need some corrections, and it needs further work. For example, 
 the code only simulates the filling line, and it does not actually consume any mix while filling. Also, the logic 
 pertaining to the numbering of days may be off. 
+
+### Notes
+The simulation does not use a future event set (FES), nor does it use SimPy. For the present system, both are not really needed and might be overkill, plus they 
+do not always make the code more understandable if you are unfamiliar with the packages. Instead, we inspect the status of the system at the beginning of
+every day, and by using suitable data structures (like Deque) we can determine what happens on that day. This is fairly 
+suitable since the system changes in discrete time, except for things happening in production units, which can be handled in relative
+isolation to things happening in other PUs. However, if you strongly prefer a FES, then you are welcome
+to refactor, of course. 

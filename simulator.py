@@ -20,12 +20,12 @@ class Simulator:
         return bool(self.config['capabilities_per_line'][filling_line_id][product_id])
 
     def produce_at_filling_line(self):
-        # Basic heuristic - assign CL20, CL100 orders to filling line 0, and AD orders + CL50 to filling line 1.
+        # Basic heuristic - assign CL20, CL50, CL100 orders to filling line 0, and AD orders to filling line 1.
         # rotate between these order types.
         # if raw material is not available, continue to other products if their material is available,
         # or pass to next day
-        # [CL20,Cl50],[CL50,AD20,AD50,AD100]
-        order_types = [[0, 2], [1, 3, 4, 5]]
+        # [CL20,Cl50,CL100],[AD20,AD50,AD100]
+        order_types = [[0, 1, 2], [3, 4, 5]]
         for filling_line in range(2):
             # the list of products through which we rotate for the current filling line:
             rotation_for_line = order_types[filling_line]
@@ -43,13 +43,15 @@ class Simulator:
                 while open_orders and time_remaining > 0:
                     # type 0 - CL or 1 - AD
                     mix_type = self.config['product_mix_type'][current_product]
+                    # since we don't place any orders for mix, the mix will quickly deplete. This is not so nice.
+                    mix_amount_required_in_liter = 0
                     # volume per product in ml * order (in thousands)  = amount of mix in kg/l
-                    mix_amount_required_in_liter = self.config['product_volume'][current_product] * open_orders[0].quantity
-                    if mix_amount_required_in_liter > self.status.remaining_mix_inventory[mix_type]:
+                    # mix_amount_required_in_liter = self.config['product_volume'][current_product] * open_orders[0].quantity
+                    # if mix_amount_required_in_liter > self.status.remaining_mix_inventory[mix_type]:
                         # we cannot produce this product, because not enough of the right mix is available
                         # move to next product.
-                        break
-                    self.status.remove_mix(mix_type,mix_amount_required_in_liter)
+                    #    break
+                    # self.status.remove_mix(mix_type,mix_amount_required_in_liter)
                     time_remaining -= open_orders[0].quantity * 1000 / production_per_hour
                     completed_order = open_orders.popleft()
                     if time_remaining > 0:
@@ -107,14 +109,14 @@ class Simulator:
 
 
 if __name__ == "__main__":
-    file_path = 'ProductDemand.xlsx'
+    file_path = 'ProductDemandComplete.xlsx'
     day_data_list = load_and_process_data(file_path)
     # config defined in settings.py
     simulator = Simulator(configuration)
     # this setup ensures that the simulator processes the demand
     # one by one, and does not have access to
     # future demands when processing the current.
-    for day in day_data_list[:6000]:
+    for day in day_data_list[:]:
         simulator.simulate_day(day)
     # an example visualization.
     # NOTE - overdue orders are set at a delta of 100.
