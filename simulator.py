@@ -43,8 +43,9 @@ class Simulator:
                 while open_orders and time_remaining > 0:
                     # type 0 - CL or 1 - AD
                     mix_type = self.config['product_mix_type'][current_product]
-                    # since we don't place any orders for mix, the mix will quickly deplete. This is not so nice.
-                    mix_amount_required_in_liter = 0
+                    # since we don't place any orders for mix, the mix will quickly deplete. to avoid this
+                    # for now we will not consume any mix while producing filled products.
+                    # however, to consume mix, commenting out the following lines should do the trick.
                     # volume per product in ml * order (in thousands)  = amount of mix in kg/l
                     # mix_amount_required_in_liter = self.config['product_volume'][current_product] * open_orders[0].quantity
                     # if mix_amount_required_in_liter > self.status.remaining_mix_inventory[mix_type]:
