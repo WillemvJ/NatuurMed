@@ -67,6 +67,9 @@ class SimulationStatus:
             if self.remaining_mix_inventory[mix_type] != 5000 * config['num_initial_mix_storage_containers'][mix_type]:
                 raise RuntimeError("Something went wrong")
 
+    # this attempts to remove the mix of this type from the containers. If there is sufficient mix of the type available,
+    # the function withdraws that mix from the containers, one by one, first emptying the oldest container, then the next-to-oldest
+    # etc, and then the function returns true. If there is insufficient mix, the function returns false.
     def remove_mix(self, mix_type, amount):
         if mix_type not in [0, 1]:
             raise ValueError("Invalid mix type. Mix type must be either 0 or 1.")
